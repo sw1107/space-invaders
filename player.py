@@ -1,5 +1,5 @@
 from turtle import Turtle
-from pellet import Pellet
+from player_pellet import PlayerPellet
 
 DISTANCE_TO_MOVE = 10
 
@@ -20,10 +20,3 @@ class Player(Turtle):
     def move_right(self):
         self.backward(DISTANCE_TO_MOVE)
 
-    def shoot(self):
-        pellet = Pellet()
-        pellet.setheading(90)
-        pellet.goto(self.xcor(), self.ycor())
-        pellet.color("#7CFC00")
-        pellet.showturtle()
-        pellet.move()
