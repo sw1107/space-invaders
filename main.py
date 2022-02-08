@@ -8,19 +8,20 @@ from scoreboard import Scoreboard
 from player_pellet import PlayerPellet
 from enemy_pellet import EnemyPellet
 
-
-# TODO: build ability for player to die, change to new player
+# build ability for player to die, change to new player
+# increase score when player shoots enemy
+# TODO: add way to reset game and go up a level <----
 # TODO: build barriers
-# TODO: make score change when player shoots enemy
-# TODO: improve shooting to make it less jerky (try to build it into the class?)
 # TODO: change player and enemy shapes to space invader shapes
 # TODO: add sounds
+# TODO: can the create pellet functions be a part of a class?
 
 ENEMY_MOVE_DISTANCE = 5
 ENEMY_X_COORD_START = -170
 ENEMY_Y_COORD_START = 200
 ENEMY_X_COORD_CHANGE = 70
 ENEMY_Y_COORD_CHANGE = 40
+KILL_DISTANCE = 18
 
 # ------------------- set up screen -------------------
 screen = Screen()
@@ -31,13 +32,17 @@ screen.title("Space Invaders")
 screen.tracer(0)
 
 # ------------------- set up game board -------------------
-player1 = Player()
-player2 = Player()
-player3 = Player()
 
-player1.goto(x=0, y=-250)
-player2.goto(x=-300, y=-350)
-player3.goto(x=-350, y=-350)
+
+def reset_game():
+    pass
+
+
+players = [Player() for _ in range(3)]
+
+players[0].goto(x=0, y=-250)
+players[1].goto(x=-350, y=-350)
+players[2].goto(x=-300, y=-350)
 
 player_pellets = []
 enemy_pellets = []
@@ -71,19 +76,19 @@ def create_enemy_pellet(enemy):
     enemy_pellets.append(new_pellet)
 
 
-active_player = player1
+active_player = players[0]
 
 screen.listen()
 screen.onkey(active_player.move_left, "Left")
 screen.onkey(active_player.move_right, "Right")
-# screen.onkey(active_player.shoot, "space")
 screen.onkey(partial(create_player_pellet, active_player), "space")
 
 direction = cycle(["left", "right"])
 current_direction = next(direction)
 
 # ------------------- game play -------------------
-while True:
+is_game_on = True
+while is_game_on:
     # move enemies
     if (current_direction == "left" and enemies[0].xcor() < -250) or \
             (current_direction == "right" and enemies[len(enemies) - 1].xcor() > 250):
@@ -115,25 +120,32 @@ while True:
         if pellet.is_active:
             pellet.move()
             if pellet.ycor() < -250:
-                pellet.hideturtle()
-                pellet.is_active = False
+                pellet.remove_from_screen()
 
     # detect player shooting enemy
     for enemy in enemies:
         for pellet in player_pellets:
             if pellet.is_active and enemy.is_alive:
-                if pellet.distance(enemy) < 20:
-                    pellet.is_active = False
-                    pellet.hideturtle()
+                if pellet.distance(enemy) < KILL_DISTANCE:
+                    pellet.remove_from_screen()
                     enemy.die()
+                    enemies.remove(enemy)
+                    scoreboard.increase_score()
+                    if len(enemies) == 0:
+                        scoreboard.level_up()
+                        print("reset game")
+                        is_game_on = False
 
     # detect enemy shooting player
     for pellet in enemy_pellets:
         if pellet.is_active:
-            if pellet.distance(active_player) < 20:
-                pellet.is_active = False
-                active_player.hideturtle()
-                print("player dead")
+            if pellet.distance(active_player) < KILL_DISTANCE:
+                pellet.remove_from_screen()
+                players[-1].hideturtle()
+                players.remove(players[-1])
+                if len(players) == 0:
+                    is_game_on = False
+                    scoreboard.game_over()
 
     screen.update()
 

@@ -19,3 +19,7 @@ class EnemyPellet(Turtle):
 
     def move(self):
         self.forward(DISTANCE_TO_MOVE)
+
+    def remove_from_screen(self):
+        self.is_active = False
+        self.hideturtle()
