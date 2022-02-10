@@ -1,13 +1,12 @@
 from turtle import Turtle
 
-DISTANCE_TO_MOVE_SIDEWAYS = 0.1
-DISTANCE_TO_MOVE_DOWN = 0.1
-SPEED_INCREASE = 0.1
+DISTANCE_TO_MOVE_SIDEWAYS = 0.2
+DISTANCE_TO_MOVE_DOWN = 0.5
 
 
 class Enemy(Turtle):
 
-    def __init__(self):
+    def __init__(self, level):
         super().__init__()
         self.penup()
         self.color("white")
@@ -15,8 +14,8 @@ class Enemy(Turtle):
         self.shapesize(stretch_wid=1, stretch_len=1.5)
         self.setheading(180)
         self.is_alive = True
-        self.speed_sideways = DISTANCE_TO_MOVE_SIDEWAYS
-        self.speed_downwards = DISTANCE_TO_MOVE_DOWN
+        self.speed_sideways = DISTANCE_TO_MOVE_SIDEWAYS * level
+        self.speed_downwards = DISTANCE_TO_MOVE_DOWN * level
 
     def move_left(self):
         self.goto(self.xcor() - self.speed_sideways, self.ycor())
@@ -31,6 +30,3 @@ class Enemy(Turtle):
         self.is_alive = False
         self.hideturtle()
 
-    def speed_up(self):
-        self.speed_sideways += SPEED_INCREASE
-        self.speed_downwards += SPEED_INCREASE
