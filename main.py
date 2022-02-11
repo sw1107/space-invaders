@@ -8,13 +8,13 @@ from scoreboard import Scoreboard
 from player_pellet import PlayerPellet
 from enemy_pellet import EnemyPellet
 
-# add game reset, increase level, and increase speed with level
+# add high score
+# increase enemy shooting speed as levels increase
+# TODO: can the create pellet functions be a part of a class?
 # TODO: build barriers
 # TODO: change player and enemy shapes to space invader shapes
 # TODO: add sounds
-# TODO: can the create pellet functions be a part of a class?
 
-ENEMY_MOVE_DISTANCE = 5
 ENEMY_X_COORD_START = -170
 ENEMY_Y_COORD_START = 200
 ENEMY_X_COORD_CHANGE = 70
@@ -120,11 +120,10 @@ reset_game()
 is_game_on = True
 while is_game_on:
     # move enemies
-    if (current_direction == "left" and enemies[0].xcor() < -250) or \
-            (current_direction == "right" and enemies[len(enemies) - 1].xcor() > 250):
+    if (current_direction == "left" and enemies[0].xcor() < -300) or \
+            (current_direction == "right" and enemies[len(enemies) - 1].xcor() > 300):
         for enemy in enemies:
             enemy.move_down()
-            print(enemies[0].xcor())
         current_direction = next(direction)
     elif current_direction == "left":
         for enemy in enemies:
@@ -134,7 +133,7 @@ while is_game_on:
             enemy.move_right()
 
     # enemies shoot at random
-    random_chance = random.randint(1, 500)
+    random_chance = random.randint(1, round(300/scoreboard.level))
     if random_chance == 1:
         enemy_shooting = random.choice(enemies)
         create_enemy_pellet(enemy_shooting)

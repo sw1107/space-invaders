@@ -1,7 +1,7 @@
 from turtle import Turtle
 
 DISTANCE_TO_MOVE_SIDEWAYS = 0.2
-DISTANCE_TO_MOVE_DOWN = 0.5
+DISTANCE_TO_MOVE_DOWN = 1
 
 
 class Enemy(Turtle):

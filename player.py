@@ -1,5 +1,4 @@
 from turtle import Turtle
-from player_pellet import PlayerPellet
 
 DISTANCE_TO_MOVE = 10
 
