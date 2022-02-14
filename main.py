@@ -1,31 +1,25 @@
 from functools import partial
-from itertools import cycle
-import random
 from turtle import Screen
 from player import Player
-from enemy import Enemy
 from scoreboard import Scoreboard
 from player_pellet import PlayerPellet
-from enemy_pellet import EnemyPellet
+from enemy_controller import EnemyController
 
-# add high score
-# increase enemy shooting speed as levels increase
-# TODO: can the create pellet functions be a part of a class?
-# TODO: build barriers
+
+# add README
+# refactor code to use enemy_controller object
+# TODO: refactor code to use player_controller object
+# TODO: update README
+
 # TODO: change player and enemy shapes to space invader shapes
 # TODO: add sounds
+# TODO: build barriers
 
-ENEMY_X_COORD_START = -170
-ENEMY_Y_COORD_START = 200
-ENEMY_X_COORD_CHANGE = 70
-ENEMY_Y_COORD_CHANGE = 40
 KILL_DISTANCE = 18
 LIVES = 3
 
 global players
 global player_pellets
-global enemy_pellets
-global enemies
 global active_player
 
 # ------------------- set up screen -------------------
@@ -41,19 +35,12 @@ screen.listen()
 scoreboard = Scoreboard()
 # ------------------- create functionality -------------------
 
+enemy_controller = EnemyController(scoreboard.level)
+
 
 def create_player_pellet(player):
     new_pellet = PlayerPellet(player)
     player_pellets.append(new_pellet)
-
-
-def create_enemy_pellet(enemy):
-    new_pellet = EnemyPellet(enemy)
-    enemy_pellets.append(new_pellet)
-
-
-direction = cycle(["left", "right"])
-current_direction = next(direction)
 
 # ------------------- set up game board -------------------
 
@@ -61,8 +48,6 @@ current_direction = next(direction)
 def reset_game():
     global players
     global player_pellets
-    global enemy_pellets
-    global enemies
     global active_player
 
     try:
@@ -72,8 +57,9 @@ def reset_game():
         pass
 
     try:
-        for pellet in enemy_pellets:
-            pellet.remove_from_screen()
+        for pellet in enemy_controller.enemy_pellets:
+            pellet.hideturtle()
+            enemy_controller.enemy_pellets.remove(pellet)
     except NameError:
         pass
 
@@ -91,19 +77,8 @@ def reset_game():
     players[2].goto(x=-300, y=-350)
 
     player_pellets = []
-    enemy_pellets = []
 
-    enemies = []
-    x_coord = ENEMY_X_COORD_START
-    y_coord = ENEMY_Y_COORD_START
-    for i in range(3):
-        for j in range(6):
-            new_enemy = Enemy(scoreboard.level)
-            new_enemy.goto(x=x_coord, y=y_coord)
-            enemies.append(new_enemy)
-            x_coord += ENEMY_X_COORD_CHANGE
-        x_coord = ENEMY_X_COORD_START
-        y_coord -= ENEMY_Y_COORD_CHANGE
+    enemy_controller.create_enemies()
 
     active_player = players[0]
 
@@ -119,24 +94,10 @@ def reset_game():
 reset_game()
 is_game_on = True
 while is_game_on:
-    # move enemies
-    if (current_direction == "left" and enemies[0].xcor() < -300) or \
-            (current_direction == "right" and enemies[len(enemies) - 1].xcor() > 300):
-        for enemy in enemies:
-            enemy.move_down()
-        current_direction = next(direction)
-    elif current_direction == "left":
-        for enemy in enemies:
-            enemy.move_left()
-    else:
-        for enemy in enemies:
-            enemy.move_right()
 
-    # enemies shoot at random
-    random_chance = random.randint(1, round(300/scoreboard.level))
-    if random_chance == 1:
-        enemy_shooting = random.choice(enemies)
-        create_enemy_pellet(enemy_shooting)
+    enemy_controller.move_enemies()
+
+    enemy_controller.shoot_at_random()
 
     # move pellets
     for pellet in player_pellets:
@@ -146,28 +107,26 @@ while is_game_on:
                 pellet.hideturtle()
                 pellet.is_active = False
 
-    for pellet in enemy_pellets:
-        if pellet.is_active:
-            pellet.move()
-            if pellet.ycor() < -250:
-                pellet.remove_from_screen()
+    enemy_controller.move_enemy_pellets()
 
     # detect player shooting enemy
-    for enemy in enemies:
+    for enemy in enemy_controller.enemies:
         for pellet in player_pellets:
-            if pellet.is_active and enemy.is_alive and pellet.distance(enemy) < KILL_DISTANCE:
+            if pellet.is_active and pellet.distance(enemy) < KILL_DISTANCE:
                 pellet.remove_from_screen()
-                enemy.die()
-                enemies.remove(enemy)
+                enemy.hideturtle()
+                enemy_controller.enemies.remove(enemy)
+                print(len(enemy_controller.enemies))
                 scoreboard.increase_score()
-                if len(enemies) == 0:
+                if len(enemy_controller.enemies) == 0:
                     scoreboard.level_up()
                     reset_game()
 
     # detect enemy shooting player
-    for pellet in enemy_pellets:
-        if pellet.is_active and pellet.distance(active_player) < KILL_DISTANCE:
-            pellet.remove_from_screen()
+    for pellet in enemy_controller.enemy_pellets:
+        if pellet.distance(active_player) < KILL_DISTANCE:
+            pellet.hideturtle()
+            enemy_controller.enemy_pellets.remove(pellet)
             players[-1].hideturtle()
             players.remove(players[-1])
             if len(players) == 0:
