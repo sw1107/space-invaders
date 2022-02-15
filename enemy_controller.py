@@ -18,16 +18,14 @@ direction = cycle(["left", "right"])
 
 class EnemyController:
 
-    def __init__(self, level):
-        super().__init__()
+    def __init__(self):
         self.enemies = []
-        self.speed_sideways = ENEMY_DISTANCE_TO_MOVE_SIDEWAYS * level
-        self.speed_downwards = ENEMY_DISTANCE_TO_MOVE_DOWN * level
+        self.speed_sideways = 0
+        self.speed_downwards = 0
         self.current_direction = next(direction)
-        self.level = level
         self.enemy_pellets = []
 
-    def create_enemies(self):
+    def create_enemies(self, level):
         x_coord = ENEMY_X_COORD_START
         y_coord = ENEMY_Y_COORD_START
         for i in range(3):
@@ -43,9 +41,10 @@ class EnemyController:
                 x_coord += ENEMY_X_COORD_CHANGE
             x_coord = ENEMY_X_COORD_START
             y_coord -= ENEMY_Y_COORD_CHANGE
+        self.speed_downwards = ENEMY_DISTANCE_TO_MOVE_DOWN * level
+        self.speed_sideways = ENEMY_DISTANCE_TO_MOVE_SIDEWAYS * level
 
     def move_enemies(self):
-        # move enemies
         if (self.current_direction == "left" and self.enemies[0].xcor() < -300) or \
                 (self.current_direction == "right" and self.enemies[len(self.enemies) - 1].xcor() > 300):
             for enemy in self.enemies:
@@ -62,7 +61,7 @@ class EnemyController:
                 enemy.goto(enemy.xcor() + self.speed_sideways, enemy.ycor())
 
     def shoot_at_random(self):
-        random_chance = random.randint(1, round(300/self.level))
+        random_chance = random.randint(1, round(500/self.speed_downwards))
         if random_chance == 1:
             random_enemy = random.choice(self.enemies)
             self.create_enemy_pellet(random_enemy)
@@ -87,3 +86,10 @@ class EnemyController:
             else:
                 pellet.forward(PELLET_DISTANCE_TO_MOVE)
 
+    def remove_enemy(self, enemy):
+        enemy.hideturtle()
+        self.enemies.remove(enemy)
+
+    def remove_enemy_pellet(self, pellet):
+        pellet.hideturtle()
+        self.enemy_pellets.remove(pellet)
